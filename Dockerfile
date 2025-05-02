@@ -11,11 +11,11 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /myapp
 
-# Update system and specifically upgrade libc-bin to the required security patch version
+# Update system and install essential dependencies (no libc-bin downgrade)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
-    && apt-get install -y libc-bin=2.36-9+deb12u7 \
+    libc-bin \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -29,8 +29,8 @@ RUN python -m venv /.venv \
 # Define a second stage for the runtime, using the same Debian Bookworm slim image
 FROM python:3.12-slim-bookworm as final
 
-# Upgrade libc-bin in the final stage to ensure security patch is applied
-RUN apt-get update && apt-get install -y libc-bin=2.36-9+deb12u7 \
+# Update libc-bin safely without forcing a downgrade
+RUN apt-get update && apt-get install -y libc-bin \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -58,3 +58,4 @@ EXPOSE 8000
 
 # Use ENTRYPOINT to specify the executable when the container starts.
 ENTRYPOINT ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+
