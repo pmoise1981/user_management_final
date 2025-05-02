@@ -1,7 +1,6 @@
 import qrcode
 from pathlib import Path
 
-
 def generate_qr_code(data: str, output_path: str) -> str:
     """
     Generate a QR code image from the given data and save it to the specified path.
@@ -23,7 +22,7 @@ def generate_qr_code(data: str, output_path: str) -> str:
     qr.make(fit=True)
 
     img = qr.make_image(fill_color="black", back_color="white")
-    img.save(output_file)
+    img.save(str(output_file))  # ← Convert Path to string
 
     return str(output_file)
 
