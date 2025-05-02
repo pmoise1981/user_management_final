@@ -20,7 +20,7 @@ class User(Base):
     """
     Represents a user within the application, corresponding to the 'users' table in the database.
     This class uses SQLAlchemy ORM for mapping attributes to database columns efficiently.
-    
+
     Attributes:
         id (UUID): Unique identifier for the user.
         nickname (str): Unique nickname for privacy, required.
@@ -40,6 +40,7 @@ class User(Base):
         last_login_at (datetime): Timestamp of the last login.
         failed_login_attempts (int): Count of failed login attempts.
         is_locked (bool): Flag indicating if the account is locked.
+        is_active (bool): Flag indicating if the account is active.
         created_at (datetime): Timestamp when the user was created, set by the server.
         updated_at (datetime): Timestamp of the last update, set by the server.
 
@@ -68,12 +69,12 @@ class User(Base):
     last_login_at: Mapped[datetime] = Column(DateTime(timezone=True), nullable=True)
     failed_login_attempts: Mapped[int] = Column(Integer, default=0)
     is_locked: Mapped[bool] = Column(Boolean, default=False)
+    is_active: Mapped[bool] = Column(Boolean, default=True)  # ✅ Added to fix test error
     created_at: Mapped[datetime] = Column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     verification_token = Column(String, nullable=True)
     email_verified: Mapped[bool] = Column(Boolean, default=False, nullable=False)
     hashed_password: Mapped[str] = Column(String(255), nullable=False)
-
 
     def __repr__(self) -> str:
         """Provides a readable representation of a user object."""
@@ -95,3 +96,4 @@ class User(Base):
         """Updates the professional status and logs the update time."""
         self.is_professional = status
         self.professional_status_updated_at = func.now()
+
