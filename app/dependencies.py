@@ -1,4 +1,5 @@
 from builtins import Exception, dict, str
+from app.models.user_model import User
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
