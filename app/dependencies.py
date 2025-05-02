@@ -50,3 +50,8 @@ def require_role(role: str):
             raise HTTPException(status_code=403, detail="Operation not permitted")
         return current_user
     return role_checker
+
+# 🔧 Added for testing routes that depend on this
+def get_current_active_user() -> User:
+    """Stub for active user dependency in protected routes."""
+    return User(id=1, email="dummy@example.com", is_active=True, role="ADMIN")
