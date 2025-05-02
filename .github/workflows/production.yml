@@ -1,61 +1,41 @@
-# Define a base stage with a Debian Bookworm base image that includes the latest glibc update
-FROM python:3.12-bookworm as base
+name: Deploy to Production
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONFAULTHANDLER=1 \
-    PIP_NO_CACHE_DIR=true \
-    PIP_DEFAULT_TIMEOUT=100 \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    QR_CODE_DIR=/myapp/qr_codes
+on:
+  push:
+    branches:
+      - main
 
-WORKDIR /myapp
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-# Update system and install essential dependencies (no libc-bin downgrade)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    libc-bin \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-# Install Python dependencies in /.venv
-COPY requirements.txt .
-RUN python -m venv /.venv \
-    && . /.venv/bin/activate \
-    && pip install --upgrade pip \
-    && pip install -r requirements.txt
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-# Define a second stage for the runtime, using the same Debian Bookworm slim image
-FROM python:3.12-slim-bookworm as final
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
-# Update libc-bin safely without forcing a downgrade
-RUN apt-get update && apt-get install -y libc-bin \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: pmoise021/devops_memo:${{ github.sha }}
 
-# Copy the virtual environment from the base stage
-COPY --from=base /.venv /.venv
-
-# Set environment variable to ensure all python commands run inside the virtual environment
-ENV PATH="/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1 \
-    PYTHONFAULTHANDLER=1 \
-    QR_CODE_DIR=/myapp/qr_codes
-
-# Set the working directory
-WORKDIR /myapp
-
-# Create and switch to a non-root user
-RUN useradd -m myuser
-USER myuser
-
-# Copy application code with appropriate ownership
-COPY --chown=myuser:myuser . .
-
-# Inform Docker that the container listens on the specified port at runtime.
-EXPOSE 8000
-
-# Use ENTRYPOINT to specify the executable when the container starts.
-ENTRYPOINT ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+      - name: Trivy Security Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'pmoise021/devops_memo:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
 
