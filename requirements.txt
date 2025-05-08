@@ -61,3 +61,6 @@ uvicorn==0.29.0
 validators==0.24.0
 markdown2
 PyJWT==2.10.1
+pillow==11.2.1
+pyzbar==0.1.9
+
