@@ -1,0 +1,40 @@
+@pytest.mark.asyncio
+async def test_create_and_get_invite_success(async_client: AsyncClient, admin_token):
+    # Create an invite
+    create_resp = await async_client.post(
+        "/invites/",
+        json={"email": "invite_success@example.com"},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert create_resp.status_code == 200
+    created_invite = create_resp.json()
+
+    # Retrieve the invite by ID
+    get_resp = await async_client.get(
+        f"/invites/{created_invite['id']}",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert get_resp.status_code == 200
+    assert get_resp.json()["email"] == "invite_success@example.com"
+    assert "token" in get_resp.json()
+
+@pytest.mark.asyncio
+async def test_create_and_get_invite_success(async_client: AsyncClient, admin_token):
+    # Create an invite
+    create_resp = await async_client.post(
+        "/invites/",
+        json={"email": "invite_success@example.com"},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert create_resp.status_code == 200
+    created_invite = create_resp.json()
+
+    # Retrieve the invite by ID
+    get_resp = await async_client.get(
+        f"/invites/{created_invite['id']}",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert get_resp.status_code == 200
+    assert get_resp.json()["email"] == "invite_success@example.com"
+    assert "token" in get_resp.json()
+

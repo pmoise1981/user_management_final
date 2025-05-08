@@ -1,0 +1,9 @@
+@pytest.mark.asyncio
+async def test_get_invite_not_found(async_client: AsyncClient, admin_token):
+    response = await async_client.get(
+        "/invites/999999",  # unlikely to exist
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Invite not found"
+

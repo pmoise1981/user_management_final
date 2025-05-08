@@ -1,0 +1,8 @@
+@pytest.mark.asyncio
+async def test_create_invite_unauthorized(async_client: AsyncClient):
+    response = await async_client.post(
+        "/invites/",
+        json={"email": "unauthorized@example.com"},
+    )
+    assert response.status_code == 401  # Expect Unauthorized
+

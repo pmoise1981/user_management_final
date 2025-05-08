@@ -1,0 +1,61 @@
+# QA Issues for Final Project: User Management System
+
+Below are 5 documented QA issues that were identified and resolved during the development of the QR code invite feature in the User Management System.
+
+---
+
+### 1. Missing Router Registration for Invites
+
+* **Issue:** Invite routes returned `404 Not Found` during initial tests.
+* **Location:** `app/main.py`
+* **Root Cause:** `invite_router` was not included in the application.
+* **Resolution:** Added the line:
+
+  ```python
+  app.include_router(invite_router.router, prefix="/invites", tags=["Invites"])
+  ```
+
+  This ensured the routes were properly registered.
+
+---
+
+### 2. Missing `get_invite` Method in `InviteService`
+
+* **Issue:** `InviteService.get_invite()` raised an `AttributeError`.
+* **Location:** `app/services/invite_service.py`
+* **Root Cause:** The method did not exist.
+* **Resolution:** Implemented the method using `select(Invite).filter(...)` to retrieve an invite by ID.
+
+---
+
+### 3. Incompatible `User` Model Fields
+
+* **Issue:** `is_active` field was passed to the `User` model during tests but not defined.
+* **Location:** `app/models/user_model.py`
+* **Root Cause:** Tests assumed a field (`is_active`) that was not part of the schema.
+* **Resolution:** Added the `is_active` field to the `User` model and adjusted tests accordingly.
+
+---
+
+### 4. Unserializable Return from Invite Route
+
+* **Issue:** API returned SQLAlchemy model instance directly, causing Pydantic response validation errors.
+* **Location:** `app/routers/invite_router.py`
+* **Root Cause:** Returned the `Invite` ORM object instead of a response schema.
+* **Resolution:** Ensured `InviteResponse` is returned and includes `orm_mode = True` in `Config`.
+
+---
+
+### 5. Stub for `get_current_active_user` Not Test-Safe
+
+* **Issue:** `get_current_active_user()` was insufficient for route protection in tests.
+* **Location:** `app/dependencies.py`
+* **Root Cause:** The stubbed user did not match the expected schema or token structure.
+* **Resolution:** Defined a more realistic dummy user with required fields (`id`, `email`, `role`, etc.) that supports dependency injection in both API routes and tests.
+
+---
+
+All identified issues have been resolved and confirmed via passing test coverage. This ensures the system's invite functionality is stable and testable.
+
+how to push that to git hub
+

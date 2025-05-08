@@ -1,0 +1,13 @@
+@pytest.mark.asyncio
+async def test_create_invite_success(async_client: AsyncClient, admin_token):
+    response = await async_client.post(
+        "/invites/",
+        json={"email": "create_success@example.com"},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "create_success@example.com"
+    assert data["qr_code_url"].endswith(".png")
+    assert "token" in data
+

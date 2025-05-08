@@ -1,0 +1,16 @@
+@pytest.mark.asyncio
+async def test_get_invite_by_id_success(async_client: AsyncClient, admin_token):
+    create_resp = await async_client.post(
+        "/invites/",
+        json={"email": "get_success@example.com"},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    invite_id = create_resp.json()["id"]
+
+    get_resp = await async_client.get(
+        f"/invites/{invite_id}",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert get_resp.status_code == 200
+    assert get_resp.json()["email"] == "get_success@example.com"
+
