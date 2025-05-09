@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from builtins import bool, int, str
 from datetime import datetime
 from enum import Enum
@@ -8,6 +9,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID, ENUM
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
+
+invites_sent = relationship("Invite", back_populates="inviter", cascade="all, delete-orphan")
 
 class UserRole(Enum):
     """Enumeration of user roles within the application, stored as ENUM in the database."""
@@ -96,4 +99,5 @@ class User(Base):
         """Updates the professional status and logs the update time."""
         self.is_professional = status
         self.professional_status_updated_at = func.now()
+
 

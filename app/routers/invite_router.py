@@ -14,8 +14,8 @@ async def create_invite(
     current_user: User = Depends(get_current_active_user),
 ):
     try:
-        invite = await InviteService.create_invite(db, invite_data)
-        return invite  # ✅ Return model instance directly
+        invite = await InviteService.create_invite(db, invite_data, current_user)
+        return invite
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -25,5 +25,16 @@ async def get_invite(invite_id: int, db: AsyncSession = Depends(get_db)):
     invite = await InviteService.get_invite(db, invite_id)
     if not invite:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite not found")
-    return invite  # ✅ Return model instance directly
+    return invite
+
+
+@router.get("/accept-invite/{token}", status_code=200)
+async def accept_invite(token: str, db: AsyncSession = Depends(get_db)):
+    try:
+        result = await InviteService.accept_invite(db, token)
+        if result:
+            return {"message": "Invite accepted successfully"}
+        raise HTTPException(status_code=404, detail="Invite not found or already accepted")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
