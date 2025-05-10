@@ -1,23 +1,36 @@
+import asyncio
 import httpx
 
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsImV4cCI6MTc0NjczMjc1Mn0.jLgblEZPOiIoccvGh3gdmWPoicdJY9JDZdBsIIaKp8I"
+# Use the nginx service name, which reverse proxies to FastAPI
+BASE_URL = "http://nginx"
 
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json",
-    "Accept": "application/json"
+LOGIN_DATA = {
+    "username": "admin@example.com",
+    "password": "adminpassword"
 }
 
-data = {
+INVITE_DATA = {
     "email": "invitee@example.com"
 }
 
-response = httpx.post("http://localhost:8000/invites/", headers=headers, json=data)
+async def main():
+    async with httpx.AsyncClient() as client:
+        # Login to get token
+        response = await client.post(f"{BASE_URL}/login/", data=LOGIN_DATA)
+        if response.status_code != 200:
+            print("❌ Login failed:", response.status_code, response.text)
+            return
 
-if response.status_code == 200:
-    print("✅ Invite created successfully.")
-    print(response.json())
-else:
-    print("❌ Failed to create invite:", response.status_code)
-    print(response.text)
+        token = response.json().get("access_token")
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # Create invite
+        invite_response = await client.post(f"{BASE_URL}/invites/", json=INVITE_DATA, headers=headers)
+        if invite_response.status_code == 200:
+            print("✅ Invite created:", invite_response.json())
+        else:
+            print("❌ Failed to create invite:", invite_response.status_code, invite_response.text)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 

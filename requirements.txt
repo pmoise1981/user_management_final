@@ -63,4 +63,5 @@ markdown2
 PyJWT==2.10.1
 pillow==11.2.1
 pyzbar==0.1.9
+minio==7.2.5
 

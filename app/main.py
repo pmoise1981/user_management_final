@@ -1,10 +1,11 @@
 from builtins import Exception
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
-from starlette.middleware.cors import CORSMiddleware  # Import the CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
+
 from app.database import Database
 from app.dependencies import get_settings
-from app.routers import user_routes, invite_router  # ✅ Added invite_router
+from app.routers import user_routes, invite_router, auth_router  # ✅ Added auth_router
 from app.utils.api_description import getDescription
 
 app = FastAPI(
@@ -19,7 +20,7 @@ app = FastAPI(
     license_info={"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
 )
 
-# CORS middleware configuration
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,6 +38,8 @@ async def startup_event():
 async def exception_handler(request, exc):
     return JSONResponse(status_code=500, content={"message": "An unexpected error occurred."})
 
+# Include all routers
 app.include_router(user_routes.router)
-app.include_router(invite_router.router)  # ✅ Proper router inclusion
+app.include_router(invite_router.router)
+app.include_router(auth_router.router, prefix="/auth", tags=["auth"])  # ✅ Ensure login route is active
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/qr-invite  # ✅ Added this line to trigger on the feature branch
 
 jobs:
   build-and-deploy:
