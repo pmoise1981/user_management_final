@@ -11,7 +11,9 @@ class InviteResponse(BaseModel):
     token: str
     qr_code_url: Optional[str]
     created_at: datetime
+    accepted: bool                     # ✅ Include accepted field
+    accepted_at: Optional[datetime]   # ✅ Include accepted_at field
 
     class Config:
-        orm_mode = True
+        from_attributes = True        # ✅ Updated for Pydantic v2
 

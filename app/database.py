@@ -11,7 +11,7 @@ class Database:
     @classmethod
     def initialize(cls, database_url: str, echo: bool = False):
         """Initialize the async engine and sessionmaker."""
-        if cls._engine is None:  # Ensure engine is created once
+        if cls._engine is None:
             cls._engine = create_async_engine(database_url, echo=echo, future=True)
             cls._session_factory = sessionmaker(
                 bind=cls._engine, class_=AsyncSession, expire_on_commit=False, future=True
@@ -23,3 +23,10 @@ class Database:
         if cls._session_factory is None:
             raise ValueError("Database not initialized. Call `initialize()` first.")
         return cls._session_factory
+
+
+# 👇 ADD THIS AT THE BOTTOM so it works for imports/tests
+from settings.config import settings
+Database.initialize(settings.database_url)
+async_session = Database.get_session_factory()
+
